@@ -1,6 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Runtime.CompilerServices;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.Design;
+using System.IO.Compression;
+using System.Security.Authentication;
+using System.Xml.Serialization;
 
 List<Plant> plants = new List<Plant>()
 {
@@ -12,7 +18,8 @@ List<Plant> plants = new List<Plant>()
         City = "Pittsfield",
         ZIP = 62363,
         Sold = true,
-        AvailableUntil = new DateTime(2023, 12, 2)
+        AvailableUntil = new DateTime(2023, 12, 2),
+        PlantType = "flower"
     },
     new Plant()
     {
@@ -22,7 +29,8 @@ List<Plant> plants = new List<Plant>()
         City = "Nashville",
         ZIP = 37013,
         Sold = false,
-        AvailableUntil = new DateTime(2023, 11, 2)
+        AvailableUntil = new DateTime(2023, 11, 2),
+        PlantType = "flower"
     },
     new Plant()
     {
@@ -32,7 +40,8 @@ List<Plant> plants = new List<Plant>()
         City = "Nashville",
         ZIP = 37015,
         Sold = true,
-        AvailableUntil = new DateTime(2023, 12, 29)
+        AvailableUntil = new DateTime(2023, 12, 29),
+        PlantType = "flower"
     },
     new Plant()
     {
@@ -42,7 +51,8 @@ List<Plant> plants = new List<Plant>()
         City = "Nashville",
         ZIP = 37086,
         Sold = false,
-        AvailableUntil = new DateTime(2023, 10, 2)
+        AvailableUntil = new DateTime(2023, 10, 2),
+        PlantType = "bush"
     },
     new Plant()
     {
@@ -52,7 +62,8 @@ List<Plant> plants = new List<Plant>()
         City = "Nashville",
         ZIP = 37072,
         Sold = true,
-        AvailableUntil = new DateTime(2023, 11, 24)
+        AvailableUntil = new DateTime(2023, 11, 24),
+        PlantType = "bush"
     },
     new Plant()
     {
@@ -62,7 +73,8 @@ List<Plant> plants = new List<Plant>()
         City = "Springfield",
         ZIP = 37072,
         Sold = false,
-        AvailableUntil = new DateTime(2023, 11, 26)
+        AvailableUntil = new DateTime(2023, 11, 26),
+        PlantType = "flower"
     },
     new Plant()
     {
@@ -72,7 +84,8 @@ List<Plant> plants = new List<Plant>()
         City = "Pearl",
         ZIP = 37072,
         Sold = false,
-        AvailableUntil = new DateTime(2023, 11, 15)
+        AvailableUntil = new DateTime(2023, 11, 15),
+        PlantType = "flower"
     }
 };
 
@@ -111,7 +124,8 @@ while (choice != "0")
     4. Delist a Plant
     5. Display a Random Plant
     6. Search for a Plant by Light Needs
-    7. View Plant Statistics");
+    7. View Plant Statistics
+    8. Inventory by Species");
     choice = Console.ReadLine();
     Console.Clear();
     //this is the functionallity for the main menu
@@ -141,6 +155,9 @@ while (choice != "0")
         case "7":
             ViewStatistics();
             break;
+        case "8":
+            InventoryBySpecies();
+            break;
         default:
             Console.WriteLine("Invalid input. Please choose a valid option.");
             break;
@@ -165,7 +182,7 @@ void PostPLantForAdoption()
     string plantPostedSpecies = Console.ReadLine();
 
 
-//uses a while loop to repeatedly prompt the user to input a valid integer from 1-5
+    //uses a while loop to repeatedly prompt the user to input a valid integer from 1-5
     Console.WriteLine("How much light does this plant need on a scale of 1-5?");
     int plantPostedLightNeeds;
     while (!int.TryParse(Console.ReadLine(), out plantPostedLightNeeds) || plantPostedLightNeeds < 1 || plantPostedLightNeeds > 5)
@@ -173,7 +190,7 @@ void PostPLantForAdoption()
         Console.WriteLine("Invalid input. Please enter a number between 1 and 5 for light needs.");
     }
 
-//uses a while loop to repeatedly prompt the user to input a valid non-negative decimal value
+    //uses a while loop to repeatedly prompt the user to input a valid non-negative decimal value
     Console.WriteLine("How much does this plant cost?");
     decimal plantPostedAskingPrice;
     while (!decimal.TryParse(Console.ReadLine(), out plantPostedAskingPrice) || plantPostedAskingPrice < 0)
@@ -184,7 +201,7 @@ void PostPLantForAdoption()
     Console.WriteLine("Where is this plant located?");
     string plantPostedCity = Console.ReadLine();
 
-//uses a while loop to repeatedly prompt the user to input a valid non-negative integer value
+    //uses a while loop to repeatedly prompt the user to input a valid non-negative integer value
     Console.WriteLine("What zip code is the plant in?");
     int plantPostedZIP;
     while (!int.TryParse(Console.ReadLine(), out plantPostedZIP) || plantPostedZIP < 0)
@@ -195,8 +212,8 @@ void PostPLantForAdoption()
     Console.WriteLine("Choose when you would like your post to expire, following the MM/DD/YYY format:");
     DateTime plantPostedAvailableUntil = DateTime.Now;
 
-//uses a while loop to repeatedly prompt the user for the expiration date until a valid date
-//in the future is entered
+    //uses a while loop to repeatedly prompt the user for the expiration date until a valid date
+    //in the future is entered
     while (plantPostedAvailableUntil < DateTime.Now)
     {
         try
@@ -214,7 +231,58 @@ void PostPLantForAdoption()
             Console.WriteLine("Date Entry Error");
         }
 
-//created a new Plant object and set its properties using the collected info
+        string[] plantTypes =
+{
+    "tree",
+    "bush",
+    "flower",
+    "herb"
+};
+        Console.WriteLine("What type of plant is it? Enter a number:");
+        for (int i = 0; i < plantTypes.Length; i++)
+        {
+            Console.WriteLine($"{i + 1}. {plantTypes[i]}");
+        }
+        int plantPostedPlantTypeUserInput = -1;
+        string plantPostedPlantType = "";
+        while (plantPostedPlantTypeUserInput < 1 || plantPostedPlantTypeUserInput > plantTypes.Length)
+        {
+            try
+            {
+                plantPostedPlantTypeUserInput = int.Parse(Console.ReadLine());
+                switch (plantPostedPlantTypeUserInput)
+                {
+                    case 1:
+                        plantPostedPlantType = plantTypes[0];
+                        break;
+                    case 2:
+                        plantPostedPlantType = plantTypes[1];
+                        break;
+                    case 3:
+                        plantPostedPlantType = plantTypes[2];
+                        break;
+                    case 4:
+                        plantPostedPlantType = plantTypes[3];
+                        break;
+                    default:
+                        Console.WriteLine("Invalid input.");
+                        break;
+                }
+                if (plantPostedPlantTypeUserInput < 1 || plantPostedPlantTypeUserInput > plantTypes.Length)
+                {
+                    throw new ValidationException($"Please enter a number between 1-{plantTypes.Length}.");
+                }
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Invalid input. Please enter a valid number.");
+            }
+        }
+        //created a new Plant object and set its properties using the collected info
         Plant plantPosted = new Plant();
         plantPosted.Species = plantPostedSpecies;
         plantPosted.LightNeeds = plantPostedLightNeeds;
@@ -223,6 +291,7 @@ void PostPLantForAdoption()
         plantPosted.ZIP = plantPostedZIP;
         plantPosted.Sold = false;
         plantPosted.AvailableUntil = plantPostedAvailableUntil;
+        plantPosted.PlantType = plantPostedPlantType;
         plants.Add(plantPosted);
 
         Console.WriteLine($"Your {plantPostedSpecies} has been posted for adoption!");
@@ -254,15 +323,15 @@ void AdoptAPlant()
     {
         Console.WriteLine("Which plant do you want to adopt? Enter a number:");
 
-//calls the list of unsold plants we made
+        //calls the list of unsold plants we made
         UnsoldPlantsList();
 
-//lets us return to the main menu again
+        //lets us return to the main menu again
         Console.WriteLine("Enter 0 to return to main menu");
 
         try
         {
-//this reads the users input as a string, parses it into an integer
+            //this reads the users input as a string, parses it into an integer
             int response = int.Parse(Console.ReadLine());
             if (response == 0)
             {
@@ -272,7 +341,7 @@ void AdoptAPlant()
             //retrieves the plant chosen by user from 'plants' collection 
             //using the index intered by the user (adjusted by subtracting 1)
             Plant chosenPlant = plants[response - 1];
-//checks if the chosen plant is sold, or if the expiration date is in the past
+            //checks if the chosen plant is sold, or if the expiration date is in the past
             if (chosenPlant.Sold || chosenPlant.AvailableUntil <= DateTime.Now)
             {
                 Console.WriteLine("This plant is not available. Please choose another one.");
@@ -347,8 +416,8 @@ void SearchPlants()
 
     int userAnswer = int.Parse(Console.ReadLine());
 
-//this declares a new list of 'Plant' object named 'lightPlants' 
-//this list will store plants that match the user's specified light needs
+    //this declares a new list of 'Plant' object named 'lightPlants' 
+    //this list will store plants that match the user's specified light needs
     List<Plant> lightPlants = new List<Plant>();
 
     for (int i = 0; i < plants.Count; i++)
@@ -364,7 +433,7 @@ void SearchPlants()
     }
     Console.WriteLine("Plants within your light needs range:");
 
-//iterates over each element in the 'lightPlants' list
+    //iterates over each element in the 'lightPlants' list
     foreach (Plant plant in lightPlants)
     {
         //outputs the index(plus 1 for a more user-friendly display)
@@ -427,4 +496,27 @@ string PlantDetails(Plant plant)
 {
     string plantString = $"{plant.Species} in {plant.City} for {plant.AskingPrice}. This plant needs a light of {plant.LightNeeds} from a scale of 1-5.";
     return plantString;
+}
+
+void InventoryBySpecies()
+{
+    Dictionary<string, int> plantInventory = new Dictionary<string, int>();
+    foreach (Plant plant in plants)
+    {
+        int plantNumber;
+        bool plantNumberSuccess = plantInventory.TryGetValue(plant.Species, out plantNumber);
+
+        if (plantNumberSuccess)
+        {
+            plantInventory[plant.Species]++;
+        }
+        else
+        {
+            plantInventory.Add(plant.Species, 1);
+        }
+    }
+    foreach (KeyValuePair<string, int> kv in plantInventory)
+    {
+        Console.WriteLine($"Species: {kv.Key}, Amount: {kv.Value}");
+    }
 }
